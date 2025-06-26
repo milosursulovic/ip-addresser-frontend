@@ -47,24 +47,45 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!username.value || !password.value) {
-    errorMessage.value = 'Please enter both username and password.'
+    errorMessage.value = 'Username and password required'
     return
   }
 
-  // Example login logic
-  if (username.value === 'admin' && password.value === 'admin') {
-    errorMessage.value = ''
-    alert('Login successful!')
-    // redirect or trigger other logic here
-  } else {
-    errorMessage.value = 'Invalid username or password.'
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value,
+      }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      errorMessage.value = data.message || 'Login failed'
+      return
+    }
+
+    // Save token
+    localStorage.setItem('token', data.token)
+
+    // Redirect
+    router.push('/')
+  } catch (err) {
+    console.error(err)
+    errorMessage.value = 'Server error'
   }
 }
 </script>
