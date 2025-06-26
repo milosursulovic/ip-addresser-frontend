@@ -57,7 +57,7 @@ const errorMessage = ref('')
 
 const handleLogin = async () => {
   if (!username.value || !password.value) {
-    errorMessage.value = 'Username and password required'
+    errorMessage.value = 'Korisničko ime i lozinka su obavezna polja'
     return
   }
 
@@ -85,7 +85,7 @@ const handleLogin = async () => {
     router.push('/')
   } catch (err) {
     console.error(err)
-    errorMessage.value = 'Server error'
+    errorMessage.value = 'Greška na serveru'
   }
 }
 </script>

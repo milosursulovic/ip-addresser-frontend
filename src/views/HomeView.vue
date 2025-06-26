@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold">IP Adrese</h1>
       <div class="space-x-2">
         <button @click="addEntry" class="bg-green-600 text-white px-4 py-2 rounded">Dodaj</button>
-        <button @click="logout" class="bg-red-500 text-white px-4 py-2 rounded">Odjavi se</button>
+        <LogoutButton />
       </div>
     </div>
 
@@ -44,6 +44,7 @@
 import { ref, onMounted } from 'vue'
 import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
 import { useRouter } from 'vue-router'
+import LogoutButton from '@/components/LogoutButton.vue'
 
 const router = useRouter()
 
@@ -55,17 +56,17 @@ const fetchData = async () => {
     if (!res.ok) throw new Error('Fetch failed')
     entries.value = await res.json()
   } catch (err) {
-    console.error('Failed to fetch data:', err)
+    console.error('Neuspešno:', err)
   }
 }
 
 const logout = () => {
   localStorage.removeItem('token')
-  router.push('login')
+  router.push('/login')
 }
 
 const addEntry = () => {
-  alert('Open modal or route to add entry')
+  router.push('/add')
 }
 
 const editEntry = (entry) => {
@@ -73,15 +74,15 @@ const editEntry = (entry) => {
 }
 
 const deleteEntry = async (id) => {
-  if (confirm('Are you sure you want to delete this entry?')) {
+  if (confirm('Da li si siguran da želiš da obrišeš ovaj unos?')) {
     try {
       const res = await fetchWithAuth(`/api/ip-addresses/${id}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error('Delete failed')
+      if (!res.ok) throw new Error('Neuspešno brisanje')
       fetchData()
     } catch (err) {
-      console.error('Delete failed:', err)
+      console.error('Neuspešno brisanje:', err)
     }
   }
 }
