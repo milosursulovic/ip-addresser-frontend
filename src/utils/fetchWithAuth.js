@@ -1,3 +1,5 @@
+import router from '@/router'
+
 export async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem('token')
   const isFormData = options.body instanceof FormData
@@ -12,6 +14,12 @@ export async function fetchWithAuth(url, options = {}) {
     ...options,
     headers,
   })
+
+  if (res.status === 401) {
+    localStorage.removeItem('token')
+    router.push('/login')
+    return
+  }
 
   return res
 }
