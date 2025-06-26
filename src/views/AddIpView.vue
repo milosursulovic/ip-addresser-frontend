@@ -1,33 +1,54 @@
 <template>
-  <div class="max-w-xl mx-auto p-6">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Dodaj novu IP adresu</h1>
-      <LogoutButton />
+  <div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-white"
+  >
+    <div class="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-xl">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">➕ Dodaj novu IP adresu</h1>
+        <LogoutButton />
+      </div>
+
+      <form @submit.prevent="handleSubmit" class="space-y-5">
+        <div v-for="field in fields" :key="field.name">
+          <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+            {{ field.label }}
+          </label>
+          <div class="relative">
+            <input
+              :id="field.name"
+              v-model="form[field.name]"
+              type="text"
+              :placeholder="`Unesite ${field.label.toLowerCase()}`"
+              class="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
+              required
+            />
+            <span class="absolute left-3 top-2.5 text-gray-400">
+              {{ getFieldIcon(field.name) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-4">
+          <button
+            type="button"
+            @click="goBack"
+            class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition"
+          >
+            ◀️ Poništi
+          </button>
+          <button
+            type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition"
+          >
+            ✅ Dodaj
+          </button>
+        </div>
+      </form>
+
+      <p v-if="error" class="text-red-500 mt-4 text-center animate-pulse">
+        {{ error }}
+      </p>
     </div>
-
-    <form @submit.prevent="handleSubmit" class="space-y-4">
-      <div v-for="field in fields" :key="field.name">
-        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">{{
-          field.label
-        }}</label>
-        <input
-          :id="field.name"
-          v-model="form[field.name]"
-          type="text"
-          class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
-
-      <div class="flex justify-between">
-        <button type="button" @click="goBack" class="bg-gray-400 text-white px-4 py-2 rounded">
-          Poništi
-        </button>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Dodaj</button>
-      </div>
-    </form>
-
-    <p v-if="error" class="text-red-500 mt-4">{{ error }}</p>
   </div>
 </template>
 
@@ -36,6 +57,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
 import LogoutButton from '@/components/LogoutButton.vue'
+import { getFieldIcon } from '@/utils/icons.js'
 
 const router = useRouter()
 const error = ref('')

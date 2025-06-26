@@ -1,43 +1,55 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-      <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
+  <div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-slate-100"
+  >
+    <div class="bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md">
+      <h2 class="text-3xl font-bold text-center text-gray-800 mb-6 tracking-tight">
+        👋 Dobrodošli
+      </h2>
 
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <label for="username" class="block text-sm font-medium text-gray-700 mb-1"
-            >Username</label
-          >
-          <input
-            id="username"
-            v-model="username"
-            type="text"
-            required
-            class="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      <form @submit.prevent="handleLogin" class="space-y-5">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+            Korisničko ime
+          </label>
+          <div class="relative">
+            <input
+              id="username"
+              v-model="username"
+              type="text"
+              required
+              placeholder="Unesite korisničko ime"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 pl-10"
+            />
+            <span class="absolute left-3 top-2.5 text-gray-400"> 👤 </span>
+          </div>
         </div>
 
-        <div class="mb-6">
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1"
-            >Password</label
-          >
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            required
-            class="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+            Lozinka
+          </label>
+          <div class="relative">
+            <input
+              id="password"
+              v-model="password"
+              type="password"
+              required
+              placeholder="Unesite lozinku"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 pl-10"
+            />
+            <span class="absolute left-3 top-2.5 text-gray-400"> 🔒 </span>
+          </div>
         </div>
 
         <button
           type="submit"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl transition duration-300"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-300"
         >
-          Login
+          🔑 Prijavi se
         </button>
 
-        <p v-if="errorMessage" class="text-red-500 text-sm mt-4 text-center">
+        <p v-if="errorMessage" class="text-red-500 text-sm text-center mt-2 animate-pulse">
           {{ errorMessage }}
         </p>
       </form>
