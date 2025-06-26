@@ -11,33 +11,35 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      title: 'Home',
+      title: 'Početna',
       component: HomeView,
       meta: { requiresAuth: true },
     },
     {
       path: '/login',
       name: 'login',
-      title: 'Login',
+      title: 'Prijavi se',
       component: LoginView,
       meta: { guestOnly: true },
     },
     {
       path: '/add',
       name: 'add-ip',
+      title: 'Dodaj IP',
       component: AddIpView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/edit/:id',
+      name: 'edit-ip',
+      title: 'Uredi IP',
+      component: EditIpView,
       meta: { requiresAuth: true },
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: NotFoundView,
-    },
-    {
-      path: '/edit/:id',
-      name: 'edit-ip',
-      component: EditIpView,
-      meta: { requiresAuth: true },
     },
   ],
 })

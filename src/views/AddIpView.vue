@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
 import LogoutButton from '@/components/LogoutButton.vue'
@@ -101,4 +101,8 @@ const handleSubmit = async () => {
 }
 
 const goBack = () => router.push('/')
+
+onMounted(() => {
+  document.title = `Dodaj IP - IP Adresar`
+})
 </script>

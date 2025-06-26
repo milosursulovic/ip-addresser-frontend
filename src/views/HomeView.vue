@@ -359,6 +359,10 @@ watch(
     sortOrder.value = query.sortOrder || 'asc'
     fetchData()
   },
-  { immediate: true },
+  { immediate: true }
 )
+
+onMounted(() => {
+  document.title = `Početna - IP Adresar`
+})
 </script>

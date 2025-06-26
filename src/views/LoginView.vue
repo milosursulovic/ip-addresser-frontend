@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -100,4 +100,8 @@ const handleLogin = async () => {
     errorMessage.value = 'Greška na serveru'
   }
 }
+
+onMounted(() => {
+  document.title = `Prijavi se - IP Adresar`
+})
 </script>

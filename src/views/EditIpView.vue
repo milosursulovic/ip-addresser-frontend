@@ -113,5 +113,8 @@ const handleUpdate = async () => {
 
 const goBack = () => router.push('/')
 
-onMounted(fetchEntry)
+onMounted(() => {
+  document.title = `Uredi IP - IP Adresar`
+  fetchEntry()
+})
 </script>
