@@ -29,9 +29,9 @@
           <td class="p-2">{{ entry.password }}</td>
           <td class="p-2">{{ entry.rdp }}</td>
           <td class="p-2 space-x-2">
-            <button @click="editEntry(entry)" class="text-blue-600 hover:underline">Edit</button>
+            <button @click="editEntry(entry)" class="text-blue-600 hover:underline">Izmeni</button>
             <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
-              Delete
+              Obriši
             </button>
           </td>
         </tr>
@@ -70,13 +70,13 @@ const addEntry = () => {
 }
 
 const editEntry = (entry) => {
-  alert(`Edit entry ${entry.ip}`)
+  router.push(`/edit/${entry._id}`)
 }
 
 const deleteEntry = async (id) => {
   if (confirm('Da li si siguran da želiš da obrišeš ovaj unos?')) {
     try {
-      const res = await fetchWithAuth(`/api/ip-addresses/${id}`, {
+      const res = await fetchWithAuth(`/api/protected/ip-addresses/${id}`, {
         method: 'DELETE',
       })
       if (!res.ok) throw new Error('Neuspešno brisanje')
