@@ -1,168 +1,154 @@
 <template>
-  <div class="bg-gradient-to-br from-slate-100 to-white min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="glass-container">
-        <!-- Header -->
-        <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4"
-        >
-          <h1 class="text-2xl font-bold">🖥️ IP Adrese</h1>
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              @click="addEntry"
-              class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
-            >
-              ➕ Dodaj
-            </button>
+  <div class="glass-container">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+      <h1 class="text-xl sm:text-2xl font-semibold text-slate-700">🖥️ IP Adrese</h1>
 
-            <button
-              @click="exportToCsv"
-              class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-            >
-              📤 Izvezi CSV
-            </button>
-
-            <label
-              class="inline-flex items-center bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-yellow-600 shadow"
-            >
-              <input type="file" @change="handleFileUpload" accept=".csv" class="hidden" />
-              📥 Uvezi CSV
-            </label>
-
-            <LogoutButton />
-          </div>
-        </div>
-
-        <!-- Search + Pagination -->
-        <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4"
-        >
-          <input
-            v-model="search"
-            @input="page = 1"
-            type="text"
-            placeholder="🔎 Pretraga..."
-            class="border border-gray-300 px-3 py-2 rounded w-full sm:w-1/2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-
-          <div class="flex flex-col items-start sm:items-end gap-1">
-            <div class="flex items-center gap-2">
-              <button
-                @click="prevPage"
-                :disabled="page === 1"
-                class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
-              >
-                ⬅️
-              </button>
-              <span>📄 Strana {{ isThereAnyPages() }} / {{ totalPages }}</span>
-              <button
-                @click="nextPage"
-                :disabled="page * limit >= total"
-                class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
-              >
-                ➡️
-              </button>
-            </div>
-            <p class="text-sm text-gray-600">Ukupno {{ entries.length }} od {{ total }} unosa</p>
-          </div>
-        </div>
-
+      <div class="flex flex-wrap items-center gap-2">
         <button
-          @click="showPasswords = !showPasswords"
-          class="text-sm text-gray-700 underline hover:text-gray-900"
+          @click="addEntry"
+          class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
         >
-          {{ showPasswords ? '🔒 Sakrij lozinke' : '🔓 Prikaži lozinke' }}
+          ➕ Dodaj
         </button>
 
-        <!-- Table -->
-        <div class="overflow-x-auto rounded-lg shadow">
-          <table class="min-w-full border border-gray-300 text-left bg-white bg-opacity-80">
-            <thead class="bg-gray-200 text-sm sm:text-base">
-              <tr>
-                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('ip')">
-                  🌐 IP adresa
-                  <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-                </th>
-                <th
-                  class="p-2 cursor-pointer whitespace-nowrap"
-                  @click="toggleSort('computerName')"
-                >
-                  🖥️ Ime računara
-                  <span v-if="sortBy === 'computerName'">{{
-                    sortOrder === 'asc' ? '↑' : '↓'
-                  }}</span>
-                </th>
-                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('username')">
-                  👤 Korisničko ime
-                  <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-                </th>
-                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('fullName')">
-                  🙍‍♂️ Puno ime
-                  <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-                </th>
-                <th class="p-2 whitespace-nowrap">🔑 Lozinka</th>
-                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('rdp')">
-                  🖧 RDP
-                  <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-                </th>
-                <th class="p-2 whitespace-nowrap">⚙️ Akcije</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="entry in entries"
-                :key="entry._id"
-                class="border-t text-sm sm:text-base hover:bg-slate-50 transition"
-              >
-                <td class="p-2">
-                  {{ entry.ip }}
-                  <button
-                    @click="copyToClipboard(entry.ip)"
-                    class="ml-2 text-blue-500 hover:underline text-xs"
-                  >
-                    📋
-                  </button>
-                </td>
-                <td class="p-2">{{ entry.computerName }}</td>
-                <td class="p-2">{{ entry.username }}</td>
-                <td class="p-2">{{ entry.fullName }}</td>
-                <td class="p-2">
-                  {{ showPasswords ? entry.password : '••••••' }}
-                  <button
-                    v-if="showPasswords"
-                    @click="copyToClipboard(entry.password)"
-                    class="ml-2 text-blue-500 hover:underline text-xs"
-                  >
-                    📋
-                  </button>
-                </td>
-                <td class="p-2">{{ entry.rdp }}</td>
-                <td class="p-2 space-x-2 whitespace-nowrap">
-                  <button @click="editEntry(entry)" class="text-blue-600 hover:underline">
-                    ✏️ Izmeni
-                  </button>
-                  <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
-                    🗑️ Obriši
-                  </button>
-                  <button @click="generateRdpFile(entry)" class="text-green-600 hover:underline">
-                    🔗 RDP
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <transition name="fade">
-        <div
-          v-if="copiedText"
-          class="fixed top-6 right-6 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm z-50"
+        <button
+          @click="exportToCsv"
+          class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
         >
-          {{ copiedText }}
-        </div>
-      </transition>
+          📤 Izvezi CSV
+        </button>
+
+        <label
+          class="inline-flex items-center bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-yellow-600 shadow"
+        >
+          <input type="file" @change="handleFileUpload" accept=".csv" class="hidden" />
+          📥 Uvezi CSV
+        </label>
+      </div>
     </div>
+
+    <!-- Search + Pagination -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+      <input
+        v-model="search"
+        @input="page = 1"
+        type="text"
+        placeholder="🔎 Pretraga..."
+        class="border border-gray-300 px-3 py-2 rounded w-full sm:w-1/2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
+      <div class="flex flex-col items-start sm:items-end gap-1">
+        <div class="flex items-center gap-2">
+          <button
+            @click="prevPage"
+            :disabled="page === 1"
+            class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
+          >
+            ⬅️
+          </button>
+          <span>📄 Strana {{ isThereAnyPages() }} / {{ totalPages }}</span>
+          <button
+            @click="nextPage"
+            :disabled="page * limit >= total"
+            class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
+          >
+            ➡️
+          </button>
+        </div>
+        <p class="text-sm text-gray-600">Ukupno {{ entries.length }} od {{ total }} unosa</p>
+      </div>
+    </div>
+
+    <button
+      @click="showPasswords = !showPasswords"
+      class="text-sm text-gray-700 underline hover:text-gray-900"
+    >
+      {{ showPasswords ? '🔒 Sakrij lozinke' : '🔓 Prikaži lozinke' }}
+    </button>
+
+    <!-- Table -->
+    <div class="overflow-x-auto rounded-lg shadow mt-4">
+      <table class="min-w-full border border-gray-300 text-left bg-white bg-opacity-80">
+        <thead class="bg-gray-200 text-sm sm:text-base">
+          <tr>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('ip')">
+              🌐 IP adresa
+              <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('computerName')">
+              🖥️ Ime računara
+              <span v-if="sortBy === 'computerName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('username')">
+              👤 Korisničko ime
+              <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('fullName')">
+              🙍‍♂️ Puno ime
+              <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 whitespace-nowrap">🔑 Lozinka</th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('rdp')">
+              🖧 RDP
+              <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 whitespace-nowrap">⚙️ Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="entry in entries"
+            :key="entry._id"
+            class="border-t text-sm sm:text-base hover:bg-slate-50 transition"
+          >
+            <td class="p-2">
+              {{ entry.ip }}
+              <button
+                @click="copyToClipboard(entry.ip)"
+                class="ml-2 text-blue-500 hover:underline text-xs"
+              >
+                📋
+              </button>
+            </td>
+            <td class="p-2">{{ entry.computerName }}</td>
+            <td class="p-2">{{ entry.username }}</td>
+            <td class="p-2">{{ entry.fullName }}</td>
+            <td class="p-2">
+              {{ showPasswords ? entry.password : '••••••' }}
+              <button
+                v-if="showPasswords"
+                @click="copyToClipboard(entry.password)"
+                class="ml-2 text-blue-500 hover:underline text-xs"
+              >
+                📋
+              </button>
+            </td>
+            <td class="p-2">{{ entry.rdp }}</td>
+            <td class="p-2 space-x-2 whitespace-nowrap">
+              <button @click="editEntry(entry)" class="text-blue-600 hover:underline">
+                ✏️ Izmeni
+              </button>
+              <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
+                🗑️ Obriši
+              </button>
+              <button @click="generateRdpFile(entry)" class="text-green-600 hover:underline">
+                🔗 RDP
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <transition name="fade">
+      <div
+        v-if="copiedText"
+        class="fixed top-6 right-6 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm z-50"
+      >
+        {{ copiedText }}
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -171,6 +157,7 @@ import { ref, watch, onMounted } from 'vue'
 import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
 import { useRoute, useRouter } from 'vue-router'
 import LogoutButton from '@/components/LogoutButton.vue'
+import Logo from '@/components/Logo.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -359,10 +346,10 @@ watch(
     sortOrder.value = query.sortOrder || 'asc'
     fetchData()
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onMounted(() => {
-  document.title = `Početna - IP Adresar`
+  document.title = `Početna - Net Desk`
 })
 </script>

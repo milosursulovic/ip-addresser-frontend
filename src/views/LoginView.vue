@@ -3,8 +3,13 @@
     class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-slate-100"
   >
     <div class="bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md">
-      <h2 class="text-3xl font-bold text-center text-gray-800 mb-6 tracking-tight">
-        👋 Dobrodošli
+      <!-- Logo -->
+      <div class="flex justify-center mb-6">
+        <Logo />
+      </div>
+
+      <h2 class="text-xl font-semibold text-center text-gray-700 mb-6 tracking-tight">
+        👋 Dobrodošli nazad
       </h2>
 
       <form @submit.prevent="handleLogin" class="space-y-5">
@@ -60,6 +65,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import Logo from '@/components/Logo.vue'
 
 const router = useRouter()
 
@@ -90,10 +96,7 @@ const handleLogin = async () => {
       return
     }
 
-    // Save token
     localStorage.setItem('token', data.token)
-
-    // Redirect
     router.push('/')
   } catch (err) {
     console.error(err)
@@ -102,6 +105,6 @@ const handleLogin = async () => {
 }
 
 onMounted(() => {
-  document.title = `Prijavi se - IP Adresar`
+  document.title = `Prijavi se - Net Desk`
 })
 </script>

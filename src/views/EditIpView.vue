@@ -1,48 +1,38 @@
 <template>
-  <div class="bg-gradient-to-br from-slate-100 to-white min-h-screen py-8">
-    <div class="max-w-4xl mx-auto px-4">
-      <div class="glass-container p-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-          <h1 class="text-2xl font-bold">✏️ Izmeni IP Unos</h1>
-          <LogoutButton />
-        </div>
+  <div
+    class="glass-container bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg max-w-4xl mx-auto"
+  >
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">✏️ Izmeni IP Unos</h1>
 
-        <!-- Form -->
-        <form @submit.prevent="handleUpdate" class="space-y-4">
-          <div v-for="field in fields" :key="field.name">
-            <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
-              {{ getFieldIcon(field.name) }} {{ field.label }}
-            </label>
-            <input
-              :id="field.name"
-              v-model="form[field.name]"
-              type="text"
-              class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-              required
-            />
-          </div>
-
-          <div class="flex justify-between mt-6">
-            <button
-              type="button"
-              @click="goBack"
-              class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-            >
-              ⬅️ Poništi
-            </button>
-            <button
-              type="submit"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              💾 Sačuvaj izmene
-            </button>
-          </div>
-
-          <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
-        </form>
+    <form @submit.prevent="handleUpdate" class="space-y-4">
+      <div v-for="field in fields" :key="field.name">
+        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+          {{ getFieldIcon(field.name) }} {{ field.label }}
+        </label>
+        <input
+          :id="field.name"
+          v-model="form[field.name]"
+          type="text"
+          class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          required
+        />
       </div>
-    </div>
+
+      <div class="flex justify-between mt-6">
+        <button
+          type="button"
+          @click="goBack"
+          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+        >
+          ⬅️ Poništi
+        </button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          💾 Sačuvaj izmene
+        </button>
+      </div>
+
+      <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
+    </form>
   </div>
 </template>
 
@@ -50,7 +40,6 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchWithAuth } from '@/utils/fetchWithAuth'
-import LogoutButton from '@/components/LogoutButton.vue'
 import { getFieldIcon } from '@/utils/icons.js'
 
 const route = useRoute()
@@ -114,7 +103,7 @@ const handleUpdate = async () => {
 const goBack = () => router.push('/')
 
 onMounted(() => {
-  document.title = `Uredi IP - IP Adresar`
+  document.title = `Uredi IP - Net Desk`
   fetchEntry()
 })
 </script>
