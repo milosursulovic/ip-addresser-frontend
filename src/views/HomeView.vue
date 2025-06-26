@@ -1,83 +1,98 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-4">
+  <div class="p-4 sm:p-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
       <h1 class="text-2xl font-bold">IP Adrese</h1>
-      <div class="space-x-2">
+      <div class="flex flex-wrap gap-2">
         <button @click="addEntry" class="bg-green-600 text-white px-4 py-2 rounded">Dodaj</button>
         <LogoutButton />
       </div>
     </div>
 
-    <div class="flex justify-between items-center mb-4">
+    <!-- Search and Pagination Controls -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
       <input
         v-model="search"
         @input="page = 1"
         type="text"
         placeholder="Pretraga..."
-        class="border px-3 py-1 rounded w-1/3"
+        class="border px-3 py-1 rounded w-full sm:w-1/2"
       />
 
-      <div class="space-x-2">
-        <button @click="prevPage" :disabled="page === 1" class="px-2 py-1 bg-gray-300 rounded">
+      <div class="flex items-center gap-2">
+        <button
+          @click="prevPage"
+          :disabled="page === 1"
+          class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
+        >
           ←
         </button>
         <span>Strana {{ isThereAnyPages() }} / {{ totalPages }}</span>
         <button
           @click="nextPage"
           :disabled="page * limit >= total"
-          class="px-2 py-1 bg-gray-300 rounded"
+          class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
         >
           →
         </button>
       </div>
     </div>
 
-    <table class="w-full border border-gray-300 text-left">
-      <thead class="bg-gray-200">
-        <tr>
-          <th class="p-2 cursor-pointer" @click="toggleSort('ip')">
-            IP adresa
-            <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-          </th>
-          <th class="p-2 cursor-pointer" @click="toggleSort('computerName')">
-            Ime računara
-            <span v-if="sortBy === 'computerName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-          </th>
-          <th class="p-2 cursor-pointer" @click="toggleSort('username')">
-            Korisničko ime
-            <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-          </th>
-          <th class="p-2 cursor-pointer" @click="toggleSort('fullName')">
-            Puno ime
-            <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-          </th>
-          <th class="p-2">Lozinka</th>
-          <th class="p-2 cursor-pointer" @click="toggleSort('rdp')">
-            RDP
-            <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-          </th>
-          <th class="p-2">Akcije</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="entry in entries" :key="entry._id" class="border-t">
-          <td class="p-2">{{ entry.ip }}</td>
-          <td class="p-2">{{ entry.computerName }}</td>
-          <td class="p-2">{{ entry.username }}</td>
-          <td class="p-2">{{ entry.fullName }}</td>
-          <td class="p-2">{{ entry.password }}</td>
-          <td class="p-2">{{ entry.rdp }}</td>
-          <td class="p-2 space-x-2">
-            <button @click="editEntry(entry)" class="text-blue-600 hover:underline">Izmeni</button>
-            <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
-              Obriši
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Table Wrapper -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-300 text-left">
+        <thead class="bg-gray-200 text-sm sm:text-base">
+          <tr>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('ip')">
+              IP adresa
+              <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('computerName')">
+              Ime računara
+              <span v-if="sortBy === 'computerName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('username')">
+              Korisničko ime
+              <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('fullName')">
+              Puno ime
+              <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 whitespace-nowrap">Lozinka</th>
+            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('rdp')">
+              RDP
+              <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="p-2 whitespace-nowrap">Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="entry in entries" :key="entry._id" class="border-t text-sm sm:text-base">
+            <td class="p-2">{{ entry.ip }}</td>
+            <td class="p-2">{{ entry.computerName }}</td>
+            <td class="p-2">{{ entry.username }}</td>
+            <td class="p-2">{{ entry.fullName }}</td>
+            <td class="p-2">{{ entry.password }}</td>
+            <td class="p-2">{{ entry.rdp }}</td>
+            <td class="p-2 space-x-2 whitespace-nowrap">
+              <button @click="editEntry(entry)" class="text-blue-600 hover:underline">
+                Izmeni
+              </button>
+              <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
+                Obriši
+              </button>
+              <button @click="generateRdpFile(entry)" class="text-green-600 hover:underline">
+                RDP
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
@@ -168,6 +183,31 @@ const isThereAnyPages = () => {
   return totalPages.value === 0 ? '0' : page.value
 }
 
+const generateRdpFile = (entry) => {
+  const rdpContent = `
+full address:s:${entry.ip}
+username:s:${entry.username}
+prompt for credentials:i:1
+authentication level:i:2
+redirectclipboard:i:1
+redirectprinters:i:0
+redirectcomports:i:0
+redirectsmartcards:i:0
+    `.trim()
+
+  const blob = new Blob([rdpContent], { type: 'application/x-rdp' })
+  const url = URL.createObjectURL(blob)
+
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${entry.computerName || entry.ip}.rdp`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+
+  URL.revokeObjectURL(url)
+}
+
 watch([page, limit, search, sortBy, sortOrder], () => {
   router.push({
     query: {
@@ -190,6 +230,6 @@ watch(
     sortOrder.value = query.sortOrder || 'asc'
     fetchData()
   },
-  { immediate: true },
+  { immediate: true }
 )
 </script>
