@@ -35,12 +35,27 @@
     <table class="w-full border border-gray-300 text-left">
       <thead class="bg-gray-200">
         <tr>
-          <th class="p-2">IP adresa</th>
-          <th class="p-2">Ime računara</th>
-          <th class="p-2">Korisničko ime</th>
-          <th class="p-2">Puno ime</th>
+          <th class="p-2 cursor-pointer" @click="toggleSort('ip')">
+            IP adresa
+            <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+          </th>
+          <th class="p-2 cursor-pointer" @click="toggleSort('computerName')">
+            Ime računara
+            <span v-if="sortBy === 'computerName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+          </th>
+          <th class="p-2 cursor-pointer" @click="toggleSort('username')">
+            Korisničko ime
+            <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+          </th>
+          <th class="p-2 cursor-pointer" @click="toggleSort('fullName')">
+            Puno ime
+            <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+          </th>
           <th class="p-2">Lozinka</th>
-          <th class="p-2">RDP</th>
+          <th class="p-2 cursor-pointer" @click="toggleSort('rdp')">
+            RDP
+            <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+          </th>
           <th class="p-2">Akcije</th>
         </tr>
       </thead>
@@ -79,6 +94,8 @@ const totalPages = ref(0)
 const page = ref(parseInt(route.query.page) || 1)
 const limit = ref(parseInt(route.query.limit) || 10)
 const search = ref(route.query.search || '')
+const sortBy = ref(route.query.sortBy || 'ip')
+const sortOrder = ref(route.query.sortOrder || 'asc')
 
 const nextPage = () => {
   if (page.value * limit.value < total.value) {
@@ -100,7 +117,10 @@ const fetchData = async () => {
       page: page.value,
       limit: limit.value,
       search: search.value,
+      sortBy: sortBy.value,
+      sortOrder: sortOrder.value,
     })
+
     const res = await fetchWithAuth(`/api/protected/ip-addresses?${params.toString()}`)
     if (!res.ok) throw new Error('Fetch failed')
 
@@ -135,26 +155,39 @@ const deleteEntry = async (id) => {
   }
 }
 
+const toggleSort = (column) => {
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortOrder.value = 'asc'
+  }
+}
+
 const isThereAnyPages = () => {
   return totalPages.value === 0 ? '0' : page.value
 }
 
-watch([page, limit, search], () => {
+watch([page, limit, search, sortBy, sortOrder], () => {
   router.push({
     query: {
       page: page.value,
       limit: limit.value,
       search: search.value,
+      sortBy: sortBy.value,
+      sortOrder: sortOrder.value,
     },
   })
 })
 
 watch(
   () => route.query,
-  (newQuery) => {
-    page.value = parseInt(newQuery.page) || 1
-    limit.value = parseInt(newQuery.limit) || 10
-    search.value = newQuery.search || ''
+  (query) => {
+    page.value = parseInt(query.page) || 1
+    limit.value = parseInt(query.limit) || 10
+    search.value = query.search || ''
+    sortBy.value = query.sortBy || 'ip'
+    sortOrder.value = query.sortOrder || 'asc'
     fetchData()
   },
   { immediate: true },
