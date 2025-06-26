@@ -62,7 +62,7 @@ const fetchEntry = async () => {
   try {
     const res = await fetchWithAuth(`/api/protected/ip-addresses`)
     const data = await res.json()
-    const found = data.find((e) => e._id === route.params.id)
+    const found = data.entries.find((e) => e._id === route.params.id)
     if (!found) {
       error.value = 'Unos nije pronađen'
       return
