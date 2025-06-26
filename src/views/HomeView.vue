@@ -67,6 +67,13 @@
           </div>
         </div>
 
+        <button
+          @click="showPasswords = !showPasswords"
+          class="text-sm text-gray-700 underline hover:text-gray-900"
+        >
+          {{ showPasswords ? '🔒 Sakrij lozinke' : '🔓 Prikaži lozinke' }}
+        </button>
+
         <!-- Table -->
         <div class="overflow-x-auto rounded-lg shadow">
           <table class="min-w-full border border-gray-300 text-left bg-white bg-opacity-80">
@@ -107,11 +114,28 @@
                 :key="entry._id"
                 class="border-t text-sm sm:text-base hover:bg-slate-50 transition"
               >
-                <td class="p-2">{{ entry.ip }}</td>
+                <td class="p-2">
+                  {{ entry.ip }}
+                  <button
+                    @click="copyToClipboard(entry.ip)"
+                    class="ml-2 text-blue-500 hover:underline text-xs"
+                  >
+                    📋
+                  </button>
+                </td>
                 <td class="p-2">{{ entry.computerName }}</td>
                 <td class="p-2">{{ entry.username }}</td>
                 <td class="p-2">{{ entry.fullName }}</td>
-                <td class="p-2">{{ entry.password }}</td>
+                <td class="p-2">
+                  {{ showPasswords ? entry.password : '••••••' }}
+                  <button
+                    v-if="showPasswords"
+                    @click="copyToClipboard(entry.password)"
+                    class="ml-2 text-blue-500 hover:underline text-xs"
+                  >
+                    📋
+                  </button>
+                </td>
                 <td class="p-2">{{ entry.rdp }}</td>
                 <td class="p-2 space-x-2 whitespace-nowrap">
                   <button @click="editEntry(entry)" class="text-blue-600 hover:underline">
@@ -129,6 +153,15 @@
           </table>
         </div>
       </div>
+
+      <transition name="fade">
+        <div
+          v-if="copiedText"
+          class="fixed top-6 right-6 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm z-50"
+        >
+          {{ copiedText }}
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -145,6 +178,8 @@ const router = useRouter()
 const entries = ref([])
 const total = ref(0)
 const totalPages = ref(0)
+const showPasswords = ref(false)
+const copiedText = ref(null)
 const page = ref(parseInt(route.query.page) || 1)
 const limit = ref(parseInt(route.query.limit) || 10)
 const search = ref(route.query.search || '')
@@ -284,6 +319,21 @@ const handleFileUpload = async (event) => {
     fetchData() // Refresh entries
   } catch (err) {
     console.error('Greška pri importu:', err)
+  }
+}
+
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedText.value = '✅ Kopirano!'
+    setTimeout(() => {
+      copiedText.value = null
+    }, 2000)
+  } catch (err) {
+    copiedText.value = '❌ Neuspešno kopiranje'
+    setTimeout(() => {
+      copiedText.value = null
+    }, 2000)
   }
 }
 
