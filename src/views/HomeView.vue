@@ -1,101 +1,137 @@
 <template>
-  <div class="p-4 sm:p-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-      <h1 class="text-2xl font-bold">IP Adrese</h1>
-      <div class="flex flex-wrap gap-2">
-        <button @click="addEntry" class="bg-green-600 text-white px-4 py-2 rounded">Dodaj</button>
-        <button @click="exportToCsv" class="bg-blue-600 text-white px-4 py-2 rounded">
-          Izvezi CSV
-        </button>
-        <LogoutButton />
-      </div>
-    </div>
-
-    <!-- Search and Pagination Controls -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-      <input
-        v-model="search"
-        @input="page = 1"
-        type="text"
-        placeholder="Pretraga..."
-        class="border px-3 py-1 rounded w-full sm:w-1/2"
-      />
-
-      <div class="flex items-center gap-2">
-        <button
-          @click="prevPage"
-          :disabled="page === 1"
-          class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
+  <div class="bg-gradient-to-br from-slate-100 to-white min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="glass-container">
+        <!-- Header -->
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4"
         >
-          ←
-        </button>
-        <span>Strana {{ isThereAnyPages() }} / {{ totalPages }}</span>
-        <button
-          @click="nextPage"
-          :disabled="page * limit >= total"
-          class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
-        >
-          →
-        </button>
-      </div>
-    </div>
+          <h1 class="text-2xl font-bold">🖥️ IP Adrese</h1>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              @click="addEntry"
+              class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+            >
+              ➕ Dodaj
+            </button>
 
-    <!-- Table Wrapper -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full border border-gray-300 text-left">
-        <thead class="bg-gray-200 text-sm sm:text-base">
-          <tr>
-            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('ip')">
-              IP adresa
-              <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-            </th>
-            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('computerName')">
-              Ime računara
-              <span v-if="sortBy === 'computerName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-            </th>
-            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('username')">
-              Korisničko ime
-              <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-            </th>
-            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('fullName')">
-              Puno ime
-              <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-            </th>
-            <th class="p-2 whitespace-nowrap">Lozinka</th>
-            <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('rdp')">
-              RDP
-              <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-            </th>
-            <th class="p-2 whitespace-nowrap">Akcije</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="entry in entries" :key="entry._id" class="border-t text-sm sm:text-base">
-            <td class="p-2">{{ entry.ip }}</td>
-            <td class="p-2">{{ entry.computerName }}</td>
-            <td class="p-2">{{ entry.username }}</td>
-            <td class="p-2">{{ entry.fullName }}</td>
-            <td class="p-2">{{ entry.password }}</td>
-            <td class="p-2">{{ entry.rdp }}</td>
-            <td class="p-2 space-x-2 whitespace-nowrap">
-              <button @click="editEntry(entry)" class="text-blue-600 hover:underline">
-                Izmeni
+            <button
+              @click="exportToCsv"
+              class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+            >
+              📤 Izvezi CSV
+            </button>
+
+            <label
+              class="inline-flex items-center bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-yellow-600 shadow"
+            >
+              <input type="file" @change="handleFileUpload" accept=".csv" class="hidden" />
+              📥 Uvezi CSV
+            </label>
+
+            <LogoutButton />
+          </div>
+        </div>
+
+        <!-- Search + Pagination -->
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4"
+        >
+          <input
+            v-model="search"
+            @input="page = 1"
+            type="text"
+            placeholder="🔎 Pretraga..."
+            class="border border-gray-300 px-3 py-2 rounded w-full sm:w-1/2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+
+          <div class="flex flex-col items-start sm:items-end gap-1">
+            <div class="flex items-center gap-2">
+              <button
+                @click="prevPage"
+                :disabled="page === 1"
+                class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
+              >
+                ⬅️
               </button>
-              <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
-                Obriši
+              <span>📄 Strana {{ isThereAnyPages() }} / {{ totalPages }}</span>
+              <button
+                @click="nextPage"
+                :disabled="page * limit >= total"
+                class="px-2 py-1 bg-gray-300 rounded disabled:opacity-50"
+              >
+                ➡️
               </button>
-              <button @click="generateRdpFile(entry)" class="text-green-600 hover:underline">
-                RDP
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+            <p class="text-sm text-gray-600">Ukupno {{ entries.length }} od {{ total }} unosa</p>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto rounded-lg shadow">
+          <table class="min-w-full border border-gray-300 text-left bg-white bg-opacity-80">
+            <thead class="bg-gray-200 text-sm sm:text-base">
+              <tr>
+                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('ip')">
+                  🌐 IP adresa
+                  <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th
+                  class="p-2 cursor-pointer whitespace-nowrap"
+                  @click="toggleSort('computerName')"
+                >
+                  🖥️ Ime računara
+                  <span v-if="sortBy === 'computerName'">{{
+                    sortOrder === 'asc' ? '↑' : '↓'
+                  }}</span>
+                </th>
+                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('username')">
+                  👤 Korisničko ime
+                  <span v-if="sortBy === 'username'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('fullName')">
+                  🙍‍♂️ Puno ime
+                  <span v-if="sortBy === 'fullName'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th class="p-2 whitespace-nowrap">🔑 Lozinka</th>
+                <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('rdp')">
+                  🖧 RDP
+                  <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th class="p-2 whitespace-nowrap">⚙️ Akcije</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="entry in entries"
+                :key="entry._id"
+                class="border-t text-sm sm:text-base hover:bg-slate-50 transition"
+              >
+                <td class="p-2">{{ entry.ip }}</td>
+                <td class="p-2">{{ entry.computerName }}</td>
+                <td class="p-2">{{ entry.username }}</td>
+                <td class="p-2">{{ entry.fullName }}</td>
+                <td class="p-2">{{ entry.password }}</td>
+                <td class="p-2">{{ entry.rdp }}</td>
+                <td class="p-2 space-x-2 whitespace-nowrap">
+                  <button @click="editEntry(entry)" class="text-blue-600 hover:underline">
+                    ✏️ Izmeni
+                  </button>
+                  <button @click="deleteEntry(entry._id)" class="text-red-600 hover:underline">
+                    🗑️ Obriši
+                  </button>
+                  <button @click="generateRdpFile(entry)" class="text-green-600 hover:underline">
+                    🔗 RDP
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
@@ -229,6 +265,28 @@ const exportToCsv = async () => {
   }
 }
 
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const res = await fetchWithAuth('/api/protected/ip-addresses/import', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) throw new Error('Import failed')
+    const result = await res.json()
+    console.log('Uvoz uspešan:', result.message)
+    fetchData() // Refresh entries
+  } catch (err) {
+    console.error('Greška pri importu:', err)
+  }
+}
+
 watch([page, limit, search, sortBy, sortOrder], () => {
   router.push({
     query: {
@@ -251,6 +309,6 @@ watch(
     sortOrder.value = query.sortOrder || 'asc'
     fetchData()
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
