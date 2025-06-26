@@ -21,7 +21,7 @@
         <button @click="prevPage" :disabled="page === 1" class="px-2 py-1 bg-gray-300 rounded">
           ←
         </button>
-        <span>Strana {{ page }}</span>
+        <span>Strana {{ isThereAnyPages() }} / {{ totalPages }}</span>
         <button
           @click="nextPage"
           :disabled="page * limit >= total"
@@ -72,6 +72,7 @@ import LogoutButton from '@/components/LogoutButton.vue'
 
 const entries = ref([])
 const total = ref(0)
+const totalPages = ref(0)
 const page = ref(1)
 const limit = ref(10)
 const search = ref('')
@@ -104,6 +105,7 @@ const fetchData = async () => {
     const data = await res.json()
     entries.value = data.entries
     total.value = data.total
+    totalPages.value = data.totalPages
   } catch (err) {
     console.error('Neuspešno:', err)
   }
@@ -129,6 +131,10 @@ const deleteEntry = async (id) => {
       console.error('Neuspešno brisanje:', err)
     }
   }
+}
+
+const isThereAnyPages = () => {
+  return totalPages.value === 0 ? '0' : page.value
 }
 
 watch([page, search], fetchData)
