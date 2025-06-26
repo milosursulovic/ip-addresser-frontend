@@ -5,6 +5,9 @@
       <h1 class="text-2xl font-bold">IP Adrese</h1>
       <div class="flex flex-wrap gap-2">
         <button @click="addEntry" class="bg-green-600 text-white px-4 py-2 rounded">Dodaj</button>
+        <button @click="exportToCsv" class="bg-blue-600 text-white px-4 py-2 rounded">
+          Izvezi CSV
+        </button>
         <LogoutButton />
       </div>
     </div>
@@ -185,15 +188,15 @@ const isThereAnyPages = () => {
 
 const generateRdpFile = (entry) => {
   const rdpContent = `
-full address:s:${entry.ip}
-username:s:${entry.username}
-prompt for credentials:i:1
-authentication level:i:2
-redirectclipboard:i:1
-redirectprinters:i:0
-redirectcomports:i:0
-redirectsmartcards:i:0
-    `.trim()
+    full address:s:${entry.ip}
+    username:s:${entry.username}
+    prompt for credentials:i:1
+    authentication level:i:2
+    redirectclipboard:i:1
+    redirectprinters:i:0
+    redirectcomports:i:0
+    redirectsmartcards:i:0
+  `.trim()
 
   const blob = new Blob([rdpContent], { type: 'application/x-rdp' })
   const url = URL.createObjectURL(blob)
@@ -206,6 +209,24 @@ redirectsmartcards:i:0
   document.body.removeChild(a)
 
   URL.revokeObjectURL(url)
+}
+
+const exportToCsv = async () => {
+  try {
+    const params = new URLSearchParams({ search: search.value })
+    const res = await fetchWithAuth(`/api/protected/ip-addresses/export?${params.toString()}`)
+    if (!res.ok) throw new Error('Export failed')
+
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'ip-entries.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('Neuspešan izvoz:', err)
+  }
 }
 
 watch([page, limit, search, sortBy, sortOrder], () => {
