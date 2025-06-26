@@ -67,16 +67,18 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import LogoutButton from '@/components/LogoutButton.vue'
+
+const route = useRoute()
+const router = useRouter()
 
 const entries = ref([])
 const total = ref(0)
 const totalPages = ref(0)
-const page = ref(1)
-const limit = ref(10)
-const search = ref('')
-const router = useRouter()
+const page = ref(parseInt(route.query.page) || 1)
+const limit = ref(parseInt(route.query.limit) || 10)
+const search = ref(route.query.search || '')
 
 const nextPage = () => {
   if (page.value * limit.value < total.value) {
@@ -137,6 +139,24 @@ const isThereAnyPages = () => {
   return totalPages.value === 0 ? '0' : page.value
 }
 
-watch([page, search], fetchData)
-onMounted(fetchData)
+watch([page, limit, search], () => {
+  router.push({
+    query: {
+      page: page.value,
+      limit: limit.value,
+      search: search.value,
+    },
+  })
+})
+
+watch(
+  () => route.query,
+  (newQuery) => {
+    page.value = parseInt(newQuery.page) || 1
+    limit.value = parseInt(newQuery.limit) || 10
+    search.value = newQuery.search || ''
+    fetchData()
+  },
+  { immediate: true },
+)
 </script>
