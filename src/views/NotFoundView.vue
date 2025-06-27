@@ -15,11 +15,14 @@
       ⬅️ Vrati se na početnu
     </router-link>
   </div>
+  <p class="text-center text-xs text-slate-500 mt-6">Verzija: {{ appVersion }}</p>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import Logo from '@/components/Logo.vue'
+
+const appVersion = import.meta.env.VITE_APP_VERSION
 
 onMounted(() => {
   document.title = `Stranica nije pronađena - Net Desk`
