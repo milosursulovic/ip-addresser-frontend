@@ -14,8 +14,8 @@
     >
       ⬅️ Vrati se na početnu
     </router-link>
+    <p class="text-center text-xs text-slate-500 mt-6">Verzija: {{ appVersion }}</p>
   </div>
-  <p class="text-center text-xs text-slate-500 mt-6">Verzija: {{ appVersion }}</p>
 </template>
 
 <script setup>
