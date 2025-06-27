@@ -31,3 +31,4 @@ coverage
 .env
 .env.production
 *.pem
+package-lock.json
