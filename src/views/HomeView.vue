@@ -11,7 +11,6 @@
         >
           ➕ Dodaj
         </button>
-
         <button
           @click="exportToCsv"
           class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
@@ -25,6 +24,13 @@
           <input type="file" @change="handleFileUpload" accept=".csv" class="hidden" />
           📥 Uvezi CSV
         </label>
+
+        <button
+          @click="showAvailableIps"
+          class="bg-purple-600 text-white px-4 py-2 rounded shadow hover:bg-purple-700"
+        >
+          📡 Slobodne IP adrese
+        </button>
       </div>
     </div>
 
@@ -60,6 +66,7 @@
       </div>
     </div>
 
+    <!-- Toggle passwords -->
     <button
       @click="showPasswords = !showPasswords"
       class="text-sm text-gray-700 underline hover:text-gray-900"
@@ -73,8 +80,7 @@
         <thead class="bg-gray-200 text-sm sm:text-base">
           <tr>
             <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('ip')">
-              🌐 IP adresa
-              <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              🌐 IP adresa <span v-if="sortBy === 'ip'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
             <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('computerName')">
               🖥️ Ime računara
@@ -90,8 +96,7 @@
             </th>
             <th class="p-2 whitespace-nowrap">🔑 Lozinka</th>
             <th class="p-2 cursor-pointer whitespace-nowrap" @click="toggleSort('rdp')">
-              🖧 RDP
-              <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              🖧 RDP <span v-if="sortBy === 'rdp'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
             <th class="p-2 whitespace-nowrap">⚙️ Akcije</th>
           </tr>
@@ -105,7 +110,7 @@
             <td class="p-2">
               {{ entry.ip }}
               <button
-                @click="copyToClipboard(entry.ip)"
+                @click="copyToClipboard(entry.ip, `IP ${entry.ip} kopiran!`)"
                 class="ml-2 text-blue-500 hover:underline text-xs"
               >
                 📋
@@ -118,7 +123,7 @@
               {{ showPasswords ? entry.password : '••••••' }}
               <button
                 v-if="showPasswords"
-                @click="copyToClipboard(entry.password)"
+                @click="copyToClipboard(entry.password, 'Lozinka kopirana!')"
                 class="ml-2 text-blue-500 hover:underline text-xs"
               >
                 📋
@@ -140,108 +145,185 @@
         </tbody>
       </table>
     </div>
-
-    <transition name="fade">
-      <div
-        v-if="copiedText"
-        class="fixed top-6 right-6 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm z-50"
-      >
-        {{ copiedText }}
-      </div>
-    </transition>
   </div>
+
+  <transition name="fade">
+    <div
+      v-if="copiedText"
+      class="fixed top-6 right-6 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm z-[999]"
+    >
+      {{ copiedText }}
+    </div>
+  </transition>
+
+  <transition name="fade">
+    <div
+      v-if="showingAvailableModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      @click.self="closeAvailableModal"
+    >
+      <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg">
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              📡 Slobodne IP adrese
+            </h2>
+            <button
+              @click="closeAvailableModal"
+              class="text-gray-500 hover:text-red-600 text-2xl leading-none"
+            >
+              &times;
+            </button>
+          </div>
+          <input
+            v-model="ipSearch"
+            type="text"
+            placeholder="🔍 Pretraga IP adresa..."
+            class="w-full border border-gray-300 px-3 py-2 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        <div v-if="availableIps.length > 0">
+          <ul class="space-y-2 max-h-60 overflow-y-auto">
+            <li
+              v-for="(ip, index) in filteredAvailableIps"
+              :key="index"
+              @click="goToAddWithIp(ip)"
+              class="p-2 bg-slate-100 rounded hover:bg-slate-200 transition flex justify-between items-center cursor-pointer"
+            >
+              <span>{{ ip }}</span>
+              <button
+                @click.stop="copyToClipboard(ip, `IP ${ip} kopiran!`)"
+                class="text-blue-500 text-sm hover:underline"
+              >
+                📋 Kopiraj
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div v-else class="text-gray-500 text-center">Nema slobodnih IP adresa.</div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import LogoutButton from '@/components/LogoutButton.vue'
-import Logo from '@/components/Logo.vue'
-
-const route = useRoute()
-const router = useRouter()
+import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
 
 const entries = ref([])
 const total = ref(0)
 const totalPages = ref(0)
+const page = ref(parseInt(useRoute().query.page) || 1)
+const limit = ref(parseInt(useRoute().query.limit) || 10)
+const search = ref(useRoute().query.search || '')
+const sortBy = ref(useRoute().query.sortBy || 'ip')
+const sortOrder = ref(useRoute().query.sortOrder || 'asc')
 const showPasswords = ref(false)
 const copiedText = ref(null)
-const page = ref(parseInt(route.query.page) || 1)
-const limit = ref(parseInt(route.query.limit) || 10)
-const search = ref(route.query.search || '')
-const sortBy = ref(route.query.sortBy || 'ip')
-const sortOrder = ref(route.query.sortOrder || 'asc')
+const availableIps = ref([])
+const showingAvailableModal = ref(false)
+const ipSearch = ref('')
 
-const nextPage = () => {
-  if (page.value * limit.value < total.value) {
-    page.value++
-    fetchData()
-  }
-}
+const router = useRouter()
+const route = useRoute()
 
-const prevPage = () => {
-  if (page.value > 1) {
-    page.value--
-    fetchData()
-  }
-}
-
-const fetchData = async () => {
-  try {
-    const params = new URLSearchParams({
-      page: page.value,
-      limit: limit.value,
-      search: search.value,
-      sortBy: sortBy.value,
-      sortOrder: sortOrder.value,
-    })
-
-    const res = await fetchWithAuth(`/api/protected/ip-addresses?${params.toString()}`)
-    if (!res.ok) throw new Error('Fetch failed')
-
-    const data = await res.json()
-    entries.value = data.entries
-    total.value = data.total
-    totalPages.value = data.totalPages
-  } catch (err) {
-    console.error('Neuspešno:', err)
-  }
-}
-
-const addEntry = () => {
-  router.push('/add')
-}
-
-const editEntry = (entry) => {
-  router.push(`/edit/${entry._id}`)
-}
-
-const deleteEntry = async (id) => {
-  if (confirm('Da li si siguran da želiš da obrišeš ovaj unos?')) {
-    try {
-      const res = await fetchWithAuth(`/api/protected/ip-addresses/${id}`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) throw new Error('Neuspešno brisanje')
-      fetchData()
-    } catch (err) {
-      console.error('Neuspešno brisanje:', err)
-    }
-  }
-}
+const addEntry = () => router.push('/add')
+const editEntry = (entry) => router.push(`/edit/${entry._id}`)
 
 const toggleSort = (column) => {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-  } else {
+  if (sortBy.value === column) sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  else {
     sortBy.value = column
     sortOrder.value = 'asc'
   }
 }
 
-const isThereAnyPages = () => {
-  return totalPages.value === 0 ? '0' : page.value
+const isThereAnyPages = () => (totalPages.value === 0 ? '0' : page.value)
+
+const fetchData = async () => {
+  const params = new URLSearchParams({
+    page: page.value,
+    limit: limit.value,
+    search: search.value,
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value,
+  })
+
+  try {
+    const res = await fetchWithAuth(`/api/protected/ip-addresses?${params.toString()}`)
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    entries.value = data.entries
+    total.value = data.total
+    totalPages.value = data.totalPages
+  } catch (err) {
+    console.error('Neuspešno dohvatanje podataka')
+  }
+}
+
+const deleteEntry = async (id) => {
+  if (!confirm('Da li si siguran da želiš da obrišeš ovaj unos?')) return
+  const res = await fetchWithAuth(`/api/protected/ip-addresses/${id}`, { method: 'DELETE' })
+  if (res.ok) fetchData()
+  else console.log('Neuspešno brisanje')
+}
+
+const exportToCsv = async () => {
+  try {
+    const res = await fetchWithAuth(`/api/protected/ip-addresses/export?search=${search.value}`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'ip-entries.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    console.log('Greška pri izvozu CSV-a')
+  }
+}
+
+const handleFileUpload = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const res = await fetchWithAuth('/api/protected/ip-addresses/import', {
+    method: 'POST',
+    body: formData,
+  })
+  if (res.ok) fetchData()
+  else console.log('Greška pri importu')
+}
+
+const showAvailableIps = async () => {
+  try {
+    const res = await fetchWithAuth('/api/protected/ip-addresses/available')
+    const data = await res.json()
+    availableIps.value = data.available
+  } catch {
+    availableIps.value = []
+  } finally {
+    showingAvailableModal.value = true
+  }
+}
+
+const closeAvailableModal = () => {
+  showingAvailableModal.value = false
+  availableIps.value = []
+}
+
+const copyToClipboard = async (text, label = 'Kopirano!') => {
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedText.value = `✅ ${label}`
+  } catch {
+    copiedText.value = '❌ Neuspešno kopiranje'
+  }
+  setTimeout(() => (copiedText.value = null), 2000)
 }
 
 const generateRdpFile = (entry) => {
@@ -258,69 +340,23 @@ const generateRdpFile = (entry) => {
 
   const blob = new Blob([rdpContent], { type: 'application/x-rdp' })
   const url = URL.createObjectURL(blob)
-
   const a = document.createElement('a')
   a.href = url
   a.download = `${entry.computerName || entry.ip}.rdp`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-
   URL.revokeObjectURL(url)
 }
 
-const exportToCsv = async () => {
-  try {
-    const params = new URLSearchParams({ search: search.value })
-    const res = await fetchWithAuth(`/api/protected/ip-addresses/export?${params.toString()}`)
-    if (!res.ok) throw new Error('Export failed')
-
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'ip-entries.csv'
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch (err) {
-    console.error('Neuspešan izvoz:', err)
+const nextPage = () => {
+  if (page.value * limit.value < total.value) {
+    page.value++
   }
 }
-
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    const res = await fetchWithAuth('/api/protected/ip-addresses/import', {
-      method: 'POST',
-      body: formData,
-    })
-
-    if (!res.ok) throw new Error('Import failed')
-    const result = await res.json()
-    console.log('Uvoz uspešan:', result.message)
-    fetchData() // Refresh entries
-  } catch (err) {
-    console.error('Greška pri importu:', err)
-  }
-}
-
-const copyToClipboard = async (text) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    copiedText.value = '✅ Kopirano!'
-    setTimeout(() => {
-      copiedText.value = null
-    }, 2000)
-  } catch (err) {
-    copiedText.value = '❌ Neuspešno kopiranje'
-    setTimeout(() => {
-      copiedText.value = null
-    }, 2000)
+const prevPage = () => {
+  if (page.value > 1) {
+    page.value--
   }
 }
 
@@ -336,6 +372,14 @@ watch([page, limit, search, sortBy, sortOrder], () => {
   })
 })
 
+const goToAddWithIp = (ip) => {
+  router.push({ path: '/add', query: { ip } })
+}
+
+const filteredAvailableIps = computed(() =>
+  availableIps.value.filter((ip) => ip.toLowerCase().includes(ipSearch.value.toLowerCase())),
+)
+
 watch(
   () => route.query,
   (query) => {
@@ -350,6 +394,6 @@ watch(
 )
 
 onMounted(() => {
-  document.title = `Početna - Net Desk`
+  document.title = 'Početna - Net Desk'
 })
 </script>

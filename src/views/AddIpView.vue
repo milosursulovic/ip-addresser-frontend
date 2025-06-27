@@ -47,11 +47,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchWithAuth } from '@/utils/fetchWithAuth.js'
 import LogoutButton from '@/components/LogoutButton.vue'
 import { getFieldIcon } from '@/utils/icons.js'
 
+const route = useRoute()
 const router = useRouter()
 const error = ref('')
 
@@ -97,5 +98,8 @@ const goBack = () => router.push('/')
 
 onMounted(() => {
   document.title = `Dodaj IP - Net Desk`
+  if (route.query.ip) {
+    form.value.ip = route.query.ip
+  }
 })
 </script>
