@@ -57,6 +57,8 @@
         <p v-if="errorMessage" class="text-red-500 text-sm text-center mt-2 animate-pulse">
           {{ errorMessage }}
         </p>
+
+        <p class="text-center text-xs text-slate-500 mt-6">Verzija: {{ appVersion }}</p>
       </form>
     </div>
   </div>
@@ -66,6 +68,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Logo from '@/components/Logo.vue'
+
+const appVersion = import.meta.env.VITE_APP_VERSION
 
 const router = useRouter()
 

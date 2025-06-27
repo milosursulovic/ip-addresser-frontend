@@ -9,10 +9,12 @@
     <main class="max-w-7xl mx-auto px-4 py-6">
       <router-view />
     </main>
+    <footer class="text-sm text-slate-500 text-center py-4">Verzija: {{ appVersion }}</footer>
   </div>
 </template>
 
 <script setup>
+const appVersion = import.meta.env.VITE_APP_VERSION
 import Logo from '@/components/Logo.vue'
 import LogoutButton from '@/components/LogoutButton.vue'
 </script>
